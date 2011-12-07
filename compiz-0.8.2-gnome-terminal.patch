@@ -1,0 +1,12 @@
+diff -upNr compiz-0.8.2.orign/metadata/gnomecompat.xml.in compiz-0.8.2/metadata/gnomecompat.xml.in
+--- compiz-0.8.2.orign/metadata/gnomecompat.xml.in	2009-02-15 10:10:23.000000000 +0100
++++ compiz-0.8.2/metadata/gnomecompat.xml.in	2009-05-25 21:27:20.864114328 +0200
+@@ -40,7 +40,7 @@
+ 		<option name="command_terminal" type="string">
+ 		    <_short>Terminal command line</_short>
+ 		    <_long>Terminal command line</_long>
+-		    <default></default>
++		    <default>gnome-terminal</default>
+ 		</option>
+ 		<option name="run_command_terminal_key" type="key">
+ 		    <_short>Open a terminal</_short>

@@ -1,0 +1,164 @@
+diff -upNr compiz-0.8.2.orign/include/compiz-core.h compiz-0.8.2/include/compiz-core.h
+--- compiz-0.8.2.orign/include/compiz-core.h	2009-02-15 10:10:23.000000000 +0100
++++ compiz-0.8.2/include/compiz-core.h	2009-07-10 13:53:53.353467924 +0200
+@@ -220,6 +220,9 @@ extern Bool       noDetection;
+ extern Bool	  useDesktopHints;
+ extern Bool       onlyCurrentScreen;
+ 
++extern char	**initialPlugins;
++extern int 	nInitialPlugins;
++
+ extern int  defaultRefreshRate;
+ extern char *defaultTextureFilter;
+ 
+diff -upNr compiz-0.8.2.orign/src/display.c compiz-0.8.2/src/display.c
+--- compiz-0.8.2.orign/src/display.c	2009-02-15 10:10:23.000000000 +0100
++++ compiz-0.8.2/src/display.c	2009-07-10 13:53:53.354468151 +0200
+@@ -675,24 +675,59 @@ updatePlugins (CompDisplay *d)
+ {
+     CompOption *o;
+     CompPlugin *p, **pop = 0;
+-    int	       nPop, i, j;
++    int	       nPop, i, j, k, dupPluginCount;
++    CompOptionValue *pList;
++    int pList_count;
+ 
+     d->dirtyPluginList = FALSE;
+ 
+     o = &d->opt[COMP_DISPLAY_OPTION_ACTIVE_PLUGINS];
+ 
+-    /* The old plugin list always begins with the core plugin. To make sure
+-       we don't unnecessarily unload plugins if the new plugin list does not
+-       contain the core plugin, we have to use an offset */
+-    if (o->value.list.nValue > 0 && strcmp (o->value.list.value[0].s, "core"))
+-	i = 0;
+-    else
+-	i = 1;
++    /* Make sure the new plugin list always list core first, then the
++       initial plugins... */
++    dupPluginCount = 0;
++    for (i=0; i < o->value.list.nValue; ++i)  {
++	if (strcmp(o->value.list.value[i].s, "core") == 0)
++	    ++dupPluginCount;
++	else
++	    for (j=0; j < nInitialPlugins; ++j)
++		if (strcmp(o->value.list.value[i].s, initialPlugins[j]) == 0) {
++		    ++dupPluginCount;
++		    break;
++		}
++    }
++
++    pList_count = 1+nInitialPlugins+o->value.list.nValue-dupPluginCount;
++
++    pList = malloc(sizeof(CompOptionValue) * pList_count);
++    if (!pList) {
++	(*core.setOptionForPlugin) (&d->base, "core", o->name, &d->plugin);
++	return;
++    }
++
++    pList[0].s = "core";
++    for (j=0; j < nInitialPlugins; ++j)
++	pList[j+1].s = initialPlugins[j];
++    ++j;
++
++    for (i=0; i < o->value.list.nValue; ++i)  {
++	if (strcmp(o->value.list.value[i].s, "core") == 0)
++	    goto L_nextPlugin;
++	else
++	    for (k=0; k < nInitialPlugins; ++k)
++		if (strcmp(o->value.list.value[i].s, initialPlugins[k]) == 0) 
++		    goto L_nextPlugin;
++	pList[j++].s = o->value.list.value[i].s;
++    L_nextPlugin:
++	(void)0;
++    }
++
++    assert(j == pList_count);
+ 
+     /* j is initialized to 1 to make sure we never pop the core plugin */
+-    for (j = 1; j < d->plugin.list.nValue && i < o->value.list.nValue; i++, j++)
++    for (i = j = 1; j < d->plugin.list.nValue && i < pList_count; i++, j++)
+     {
+-	if (strcmp (d->plugin.list.value[j].s, o->value.list.value[i].s))
++	if (strcmp (d->plugin.list.value[j].s, pList[i].s))
+ 	    break;
+     }
+ 
+@@ -704,6 +739,7 @@ updatePlugins (CompDisplay *d)
+ 	if (!pop)
+ 	{
+ 	    (*core.setOptionForPlugin) (&d->base, "core", o->name, &d->plugin);
++	    free(pList);
+ 	    return;
+ 	}
+     }
+@@ -715,13 +751,13 @@ updatePlugins (CompDisplay *d)
+ 	free (d->plugin.list.value[d->plugin.list.nValue].s);
+     }
+ 
+-    for (; i < o->value.list.nValue; i++)
++    for (; i < pList_count; i++)
+     {
+ 	p = 0;
+ 	for (j = 0; j < nPop; j++)
+ 	{
+ 	    if (pop[j] && strcmp (pop[j]->vTable->name,
+-				  o->value.list.value[i].s) == 0)
++				  pList[i].s) == 0)
+ 	    {
+ 		if (pushPlugin (pop[j]))
+ 		{
+@@ -734,7 +770,7 @@ updatePlugins (CompDisplay *d)
+ 
+ 	if (p == 0)
+ 	{
+-	    p = loadPlugin (o->value.list.value[i].s);
++	    p = loadPlugin (pList[i].s);
+ 	    if (p)
+ 	    {
+ 		if (!pushPlugin (p))
+@@ -775,7 +811,9 @@ updatePlugins (CompDisplay *d)
+     if (nPop)
+ 	free (pop);
+ 
++    free(pList);
+     (*core.setOptionForPlugin) (&d->base, "core", o->name, &d->plugin);
++
+ }
+ 
+ static void
+diff -upNr compiz-0.8.2.orign/src/main.c compiz-0.8.2/src/main.c
+--- compiz-0.8.2.orign/src/main.c	2009-02-16 14:57:22.000000000 +0100
++++ compiz-0.8.2/src/main.c	2009-07-10 13:53:53.354468151 +0200
+@@ -40,6 +40,9 @@ char *programName;
+ char **programArgv;
+ int  programArgc;
+ 
++char **initialPlugins = NULL;
++int nInitialPlugins = 0;
++
+ char *backgroundImage = NULL;
+ 
+ REGION   emptyRegion;
+@@ -413,6 +416,11 @@ main (int argc, char **argv)
+ 
+ 	    ptr += sprintf (ptr, "</default>");
+ 	}
++
++	initialPlugins = malloc (nPlugin * sizeof (char *));
++	memcpy (initialPlugins, plugin, nPlugin * sizeof (char *));
++	nInitialPlugins = nPlugin;
++
+     }
+ 
+     xmlInitParser ();
+@@ -462,6 +470,9 @@ main (int argc, char **argv)
+ 
+     xmlCleanupParser ();
+ 
++    if (initialPlugins != NULL)
++        free (initialPlugins);
++
+     if (restartSignal)
+     {
+ 	execvp (programName, programArgv);

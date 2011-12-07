@@ -1,0 +1,40 @@
+diff -up compiz-0.8.2/gtk/gnome/50-compiz-desktop-key.xml.in.unknown-key compiz-0.8.2/gtk/gnome/50-compiz-desktop-key.xml.in
+--- compiz-0.8.2/gtk/gnome/50-compiz-desktop-key.xml.in.unknown-key	2009-10-26 19:31:49.714797414 -0400
++++ compiz-0.8.2/gtk/gnome/50-compiz-desktop-key.xml.in	2009-10-26 19:32:47.250797450 -0400
+@@ -1,16 +1,16 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <KeyListEntries _name="Desktop" wm_name="compiz" package="compiz">
+ 
+-	<KeyListEntry name="/apps/compiz/gnomecompat/allscreens/options/run_key"/>
++	<KeyListEntry name="/apps/compiz/plugins/gnomecompat/allscreens/options/run_key"/>
+ 
+-	<KeyListEntry name="/apps/compiz/gnomecompat/allscreens/options/main_menu_key"/>
++	<KeyListEntry name="/apps/compiz/plugins/gnomecompat/allscreens/options/main_menu_key"/>
+ 
+-	<KeyListEntry name="/apps/compiz/gnomecompat/allscreens/options/run_command_screenshot_key"/>
++	<KeyListEntry name="/apps/compiz/plugins/gnomecompat/allscreens/options/run_command_screenshot_key"/>
+ 
+-	<KeyListEntry name="/apps/compiz/gnomecompat/allscreens/options/run_command_window_screenshot_key"/>
++	<KeyListEntry name="/apps/compiz/plugins/gnomecompat/allscreens/options/run_command_window_screenshot_key"/>
+ 
+ 	<KeyListEntry name="/apps/compiz/general/allscreens/options/show_desktop_key"/>
+ 
+-        <KeyListEntry name="/apps/compiz/gnomecompat/allscreens/options/run_command_terminal_key"/>
++        <KeyListEntry name="/apps/compiz/plugins/gnomecompat/allscreens/options/run_command_terminal_key"/>
+ 
+ </KeyListEntries>
+diff -up compiz-0.8.2/gtk/gnome/50-compiz-key.xml.in.unknown-key compiz-0.8.2/gtk/gnome/50-compiz-key.xml.in
+--- compiz-0.8.2/gtk/gnome/50-compiz-key.xml.in.unknown-key	2009-10-26 19:33:00.669802869 -0400
++++ compiz-0.8.2/gtk/gnome/50-compiz-key.xml.in	2009-10-26 19:47:07.630802031 -0400
+@@ -15,9 +15,9 @@
+ 
+ 	<KeyListEntry name="/apps/compiz/general/allscreens/options/minimize_window_key"/>
+ 
+-	<KeyListEntry name="/apps/compiz/general/allscreens/options/opacity_decrease_key"/>
++	<KeyListEntry name="/apps/compiz/plugins/obs/allscreens/options/opacity_decrease_key"/>
+ 
+-	<KeyListEntry name="/apps/compiz/general/allscreens/options/opacity_increase_key"/>
++	<KeyListEntry name="/apps/compiz/plugins/obs/allscreens/options/opacity_increase_key"/>
+ 
+ 	<KeyListEntry name="/apps/compiz/general/allscreens/options/show_desktop_key"/>
+ 

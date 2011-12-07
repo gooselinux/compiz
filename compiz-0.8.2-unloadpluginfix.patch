@@ -1,0 +1,35 @@
+diff -upNr compiz-0.8.2.orign/include/compiz-core.h compiz-0.8.2/include/compiz-core.h
+--- compiz-0.8.2.orign/include/compiz-core.h	2009-02-15 10:10:23.000000000 +0100
++++ compiz-0.8.2/include/compiz-core.h	2009-11-30 17:11:03.591253419 +0100
+@@ -27,6 +27,7 @@
+ #define _COMPIZ_CORE_H
+ 
+ #include <compiz-plugin.h>
++#include <dlfcn.h>
+ 
+ #define CORE_ABIVERSION 20090207
+ 
+diff -upNr compiz-0.8.2.orign/plugins/gconf.c compiz-0.8.2/plugins/gconf.c
+--- compiz-0.8.2.orign/plugins/gconf.c	2009-02-15 10:10:23.000000000 +0100
++++ compiz-0.8.2/plugins/gconf.c	2009-11-30 16:48:44.694223679 +0100
+@@ -802,6 +802,8 @@ gconfFiniObject (CompPlugin *p,
+ static Bool
+ gconfInit (CompPlugin *p)
+ {
++    dlopen ("libgconf-2.so.4", RTLD_LAZY);
++
+     if (!compInitPluginMetadataFromInfo (&gconfMetadata, p->vTable->name,
+ 					 0, 0, 0, 0))
+ 	return FALSE;
+diff -upNr compiz-0.8.2.orign/plugins/glib.c compiz-0.8.2/plugins/glib.c
+--- compiz-0.8.2.orign/plugins/glib.c	2009-02-15 10:10:23.000000000 +0100
++++ compiz-0.8.2/plugins/glib.c	2009-11-30 16:50:01.246415814 +0100
+@@ -192,6 +192,8 @@ glibInitDisplay (CompPlugin  *p,
+ {
+     GLibDisplay *gd;
+ 
++    dlopen ("libglib-2.0.so.0", RTLD_LAZY);
++
+     if (!checkPluginABI ("core", CORE_ABIVERSION))
+ 	return FALSE;
+ 
